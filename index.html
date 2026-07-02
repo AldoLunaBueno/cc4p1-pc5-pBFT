@@ -65,12 +65,80 @@
       <!-- Slide 3: System Model -->
       <section>
         <h2>The pBFT System Model</h2>
-        <ul style="font-size: 0.8em;">
-            <li><strong>Asynchrony:</strong> Works over the internet. Messages can be delayed, lost, or duplicated.</li>
-            <li><strong>Strong Adversary:</strong> Attackers can coordinate compromised nodes and delay communications.</li>
-            <li><strong>Cryptography:</strong> Relies on public-key signatures, MACs, and hashes to prevent tampering.</li>
-            <li><strong>Safety without Synchrony:</strong> Guarantees no corrupted state, only needing weak synchrony for liveness.</li>
-        </ul>
+        <div style="margin-top: 10px; display: flex; justify-content: center; transform: scale(0.9);">
+          <script type="text/tikz">
+            \usetikzlibrary{positioning, arrows.meta}
+            \begin{tikzpicture}[
+                    font=\sffamily, text=white,
+                    node distance=0.8cm and 0.4cm,
+                    core/.style={rectangle, draw=white, line width=1.2pt, inner sep=10pt, align=center, font=\sffamily\bfseries, text width=6cm},
+                    pillar/.style={rectangle, draw=white!80, line width=0.8pt, inner sep=6pt, align=center, font=\sffamily\bfseries, text width=4cm, minimum height=1cm},
+                    detail/.style={rectangle, draw=white!40, fill=white!10, rounded corners=2pt, align=left, inner sep=6pt, text width=4cm, font=\sffamily\scriptsize},
+                    link/.style={-{Stealth[length=2mm]}, draw=white!60, line width=0.6pt},
+                    interrelation/.style={Stealth-Stealth, draw=white!80, line width=0.6pt, dashed}
+                ]
+
+                % Central Core (Top)
+                \node[core] (core) {
+                    pBFT System Model\\
+                    \mdseries\small``Never trust, always verify''\\
+                    \mdseries\footnotesize(Zero Trust Architecture)
+                };
+
+                % Three Pillars (Middle Row)
+                \node[pillar, below=1.2cm of core] (p2) {
+                    2. Strong Adversary\\
+                    \mdseries\small[\textcolor{red!60}{The Threat}]
+                };
+
+                \node[pillar, left=of p2] (p1) {
+                    1. Asynchrony\\
+                    \mdseries\small[\textcolor{blue!60}{The Environment}]
+                };
+
+                \node[pillar, right=of p2] (p3) {
+                    3. Safety vs Synchrony\\
+                    \mdseries\small[\textcolor{green!60}{The Guarantee}]
+                };
+
+                % Connect Core to Pillars
+                \draw[link] (core) -- (p1.north);
+                \draw[link] (core) -- (p2.north);
+                \draw[link] (core) -- (p3.north);
+
+                % Details (Bottom Row)
+                \node[detail, below=0.4cm of p1] (d1) {
+                    $\bullet$ Unpredictable network\\
+                    $\bullet$ Arbitrary message delays\\
+                    $\bullet$ Dropped or reordered data\\
+                    $\bullet$ Internet-scale chaos
+                };
+                \draw[link] (p1) -- (d1);
+
+                \node[detail, below=0.4cm of p2] (d2) {
+                    $\bullet$ Active, coordinated attacks\\
+                    $\bullet$ Hackers \& faulty nodes\\
+                    $\bullet$ \textbf{Mitigation:} Cryptography\\
+                    \hspace*{2mm}(Signatures, MACs, Hashes)
+                };
+                \draw[link] (p2) -- (d2);
+
+                \node[detail, below=0.4cm of p3] (d3) {
+                    $\bullet$ \textbf{Safety:} Absolute data integrity; zero corruption.\\
+                    $\bullet$ \textbf{Liveness:} Weak synchrony needed (pauses instead of erring).
+                };
+                \draw[link] (p3) -- (d3);
+
+                % Interrelation Arc between P1 and P3
+                \draw[interrelation] (p1.north east) to[bend left=12] 
+                    node[above, font=\sffamily\tiny\itshape, text width=5cm, align=center, yshift=1mm] {
+                        Defines network chaos $\longleftrightarrow$ Guarantees integrity despite chaos
+                    } 
+                    (p3.north west);
+
+            \end{tikzpicture}
+          </script>
+        </div>
       </section>
 
       <!-- Slide 4: 3f+1 Rule -->
