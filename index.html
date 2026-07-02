@@ -1,0 +1,469 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  <title>Practical Byzantine Fault Tolerance (pBFT)</title>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reset.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/theme/night.min.css">
+  
+  <style>
+    .reveal h1, .reveal h2, .reveal h3, .reveal h4, .reveal h5, .reveal h6 {
+        text-transform: none;
+    }
+    .chart-container {
+        position: relative; 
+        height: 50vh; 
+        width: 80vw;
+        margin: 0 auto;
+    }
+    .highlight-red { color: #ff2c2d; }
+    .highlight-blue { color: #1b91ff; }
+    .highlight-green { color: #17ff2e; }
+  </style>
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+      <!-- Slide 1: Title -->
+      <section>
+        <h2>Practical Byzantine Fault Tolerance (pBFT)</h2>
+        <p>A resilient consensus algorithm for distributed systems</p>
+        <p><small>Based on the seminal work of Castro and Liskov</small></p>
+      </section>
+
+      <!-- Slide 2: What is a Byzantine Fault -->
+      <section>
+        <section>
+            <h2>From "Fail-Stop" to "Byzantine"</h2>
+            <p>Traditional fault tolerance handled <strong>Fail-Stop</strong> errors (hardware crash).</p>
+            <p class="fragment">What happens when a node <em>doesn't</em> shut down?</p>
+            <ul class="fragment">
+                <li>Software bugs</li>
+                <li>Malicious hackers</li>
+                <li>Nodes send conflicting or fake data</li>
+            </ul>
+        </section>
+        <section>
+            <h2>The Byzantine Fault</h2>
+            <p>We must assume the worst: defective nodes actively conspire to corrupt the system.</p>
+            <p>Every response might be a calculated lie.</p>
+        </section>
+      </section>
+
+      <!-- Slide 3: System Model -->
+      <section>
+        <h2>The pBFT System Model</h2>
+        <ul style="font-size: 0.8em;">
+            <li><strong>Asynchrony:</strong> Works over the internet. Messages can be delayed, lost, or duplicated.</li>
+            <li><strong>Strong Adversary:</strong> Attackers can coordinate compromised nodes and delay communications.</li>
+            <li><strong>Cryptography:</strong> Relies on public-key signatures, MACs, and hashes to prevent tampering.</li>
+            <li><strong>Safety without Synchrony:</strong> Guarantees no corrupted state, only needing weak synchrony for liveness.</li>
+        </ul>
+      </section>
+
+      <!-- Slide 4: 3f+1 Rule -->
+      <section>
+        <h2>The $3f+1$ Rule</h2>
+        <p>To tolerate $f$ faulty nodes, pBFT requires $n = 3f+1$ total replicas.</p>
+        <p class="fragment"><strong>Why?</strong></p>
+        <ul class="fragment" style="font-size: 0.8em;">
+            <li>System must progress with $n-f$ responses (since $f$ could be slow/dead).</li>
+            <li>Of those $n-f$ responses, $f$ might be malicious nodes lying.</li>
+            <li>For the honest nodes to outvote the malicious ones: $(n-f) - f > f \Rightarrow n > 3f$.</li>
+        </ul>
+        <p class="fragment highlight-blue" style="font-size: 0.9em; margin-top: 20px;">Quorum Intersections guarantee at least one honest node is present in any $2f+1$ majority.</p>
+      </section>
+
+      <!-- Slide 5: State Machine Replication -->
+      <section>
+        <h2>State Machine Replication</h2>
+        <p>All replicas start at the same state and execute deterministic operations.</p>
+        <p><strong>Goal:</strong> All honest replicas must agree on a total order for requests.</p>
+        <div style="background: rgba(255,255,255,0.1); padding: 10px; border-radius: 10px; margin-top: 30px;">
+            <p><em>Primary-Backup Architecture</em></p>
+            <p style="font-size: 0.8em;">System moves through <strong>views</strong>. One replica is the primary (leader), the rest are backups. Clients need $f+1$ identical responses to trust a result.</p>
+        </div>
+      </section>
+
+      <!-- Slide 6: The 3-Phase Protocol -->
+      <section>
+        <h2>The 3-Phase Protocol</h2>
+        <p>Required to prevent a traitorous leader from splitting the network.</p>
+        <ol>
+            <li class="fragment"><strong>Pre-prepare:</strong> Leader proposes an order.</li>
+            <li class="fragment"><strong>Prepare:</strong> Replicas agree on the order.</li>
+            <li class="fragment"><strong>Commit:</strong> Replicas lock the order across view changes.</li>
+        </ol>
+      </section>
+
+      <!-- Slide 6.5: Normal Case Operation -->
+      <section>
+        <h2>Normal Case Operation</h2>
+        <div class="mermaid" style="font-size: 0.8em; margin-top: -20px;">
+sequenceDiagram
+    participant C as C
+    participant N0 as 0
+    participant N1 as 1
+    participant N2 as 2
+    participant N3 as 3
+
+    Note over N3: X (Inactive/Faulty)
+
+    Note over C, N3: request
+    C->>N0: 
+
+    Note over C, N3: pre-prepare
+    N0->>N1: 
+    N0->>N2: 
+    N0->>N3: 
+
+    Note over C, N3: prepare
+    N1->>N0: 
+    N1->>N2: 
+    N1->>N3: 
+    N2->>N0: 
+    N2->>N1: 
+    N2->>N3: 
+
+    Note over C, N3: commit
+    N0->>N1: 
+    N0->>N2: 
+    N0->>N3: 
+    N1->>N0: 
+    N1->>N2: 
+    N1->>N3: 
+    N2->>N0: 
+    N2->>N1: 
+    N2->>N3: 
+
+    Note over C, N3: reply
+    N0->>C: 
+    N1->>C: 
+    N2->>C:
+        </div>
+      </section>
+
+      <!-- Slide 7: Pre-prepare & Prepare -->
+      <section>
+        <h2>Phases 1 & 2: Ordering</h2>
+        <ul style="font-size: 0.9em;">
+            <li><strong>Pre-prepare:</strong> Primary assigns a sequence number to a client's request.</li>
+            <li><strong>Prepare:</strong> Backups verify and broadcast acceptance.</li>
+        </ul>
+        <p class="fragment" style="font-size: 0.9em;">Once a node collects $2f$ matching Prepare messages + the Pre-prepare, it is <strong>Prepared</strong>.</p>
+        <p class="fragment highlight-green" style="margin-top: 30px;"><em>Ensures agreement on order within the current view.</em></p>
+      </section>
+
+      <!-- Slide 8: Commit -->
+      <section>
+        <h2>Phase 3: The Commit</h2>
+        <p style="font-size: 0.9em;">Being "prepared" isn't enough to execute, because the leader might fail!</p>
+        <ul style="font-size: 0.8em;">
+            <li>Prepared nodes broadcast a <strong>Commit</strong> message.</li>
+            <li>Collecting $2f+1$ Commit messages means the node is <strong>Committed-local</strong>.</li>
+            <li>The operation is finally executed and sent to the client.</li>
+        </ul>
+        <p class="highlight-green" style="margin-top: 30px; font-size: 0.9em;"><em>Guarantees order survives even if the leader changes.</em></p>
+      </section>
+
+      <!-- Slide 9: Garbage Collection -->
+      <section>
+        <h2>Garbage Collection</h2>
+        <p>We can't keep message logs forever. We need to truncate them securely.</p>
+        <ul style="font-size: 0.8em;">
+            <li>Nodes periodically create a <strong>Checkpoint</strong> (e.g., every 100 requests) with a cryptographic state digest.</li>
+            <li>When $2f+1$ identical checkpoint messages are gathered, it becomes a <strong>Stable Checkpoint</strong>.</li>
+            <li>Previous logs are safely deleted!</li>
+        </ul>
+      </section>
+
+      <!-- Slide 10: View Changes -->
+      <section>
+        <h2>Tolerating Leader Failures</h2>
+        <p>What if the Primary is malicious or crashes?</p>
+        <ul style="font-size: 0.9em;">
+            <li>Backups use <strong>Timeouts</strong>.</li>
+            <li>If a request isn't processed in time, backups suspect the leader and stop accepting normal messages.</li>
+            <li>They broadcast a <code class="highlight-red">VIEW-CHANGE</code> message.</li>
+        </ul>
+      </section>
+
+      <!-- Slide 11: View Change Protocol -->
+      <section>
+        <h2>The View Change Protocol</h2>
+        <ul style="font-size: 0.8em;">
+            <li>The next primary (Round-robin: $v \bmod n$) collects $2f$ <code class="highlight-red">VIEW-CHANGE</code> messages.</li>
+            <li>It broadcasts a <code class="highlight-blue">NEW-VIEW</code> message with proofs of the last stable checkpoint and all prepared operations.</li>
+            <li>Unfinished operations are safely re-proposed; empty slots are filled with no-ops.</li>
+        </ul>
+        <p style="margin-top: 30px;"><em>No confirmed operation is ever lost.</em></p>
+      </section>
+
+      <!-- Slide 12: Cryptography & Optimizations -->
+      <section>
+        <h2>Making it "Practical"</h2>
+        <p style="font-size: 0.9em;">Why was pBFT faster than previous Byzantine models?</p>
+        <ul style="font-size: 0.7em;">
+            <li><strong>MACs instead of RSA:</strong> Uses symmetric cryptography (MACs, ~10µs) for normal cases, reserving slow RSA signatures (~43ms) only for view changes.</li>
+            <li><strong>Reply Reduction:</strong> Only one node sends the full reply to the client; others send tiny hashes.</li>
+            <li><strong>Batching:</strong> Groups multiple requests under a single consensus protocol.</li>
+            <li><strong>Read-only Fast Path:</strong> Direct reads in one network trip.</li>
+        </ul>
+      </section>
+
+      <!-- Slide 12.5: Replicated File System Architecture -->
+      <section>
+        <h2>BFS Architecture</h2>
+        <p style="font-size: 0.6em; margin-bottom: 0;">Replicated File System Architecture (NFS transparent to client)</p>
+        <div class="mermaid" style="font-size: 0.6em;">
+flowchart LR
+    %% Connections between client and replicas
+    RL_C <--> RL_0
+    RL_C <--> RL_N
+
+    %% Client Structure
+    subgraph Client [client]
+        direction TB
+        subgraph Client_Top [ ]
+            direction LR
+            AB("Andrew<br>benchmark")
+            subgraph Relay [relay]
+                direction TB
+                RL_C("replication<br>library")
+            end
+        end
+        KNFS("kernel NFS client")
+        
+        AB <--> KNFS
+        RL_C <--> KNFS
+    end
+
+    %% Replica 0 Structure
+    subgraph Replica0 [replica 0]
+        direction TB
+        subgraph Daemon0 [ ]
+            direction TB
+            SNFSD0("snfsd")
+            RL_0("replication<br>library")
+        end
+        KVM0("kernel VM")
+        
+        RL_0 --> SNFSD0
+        SNFSD0 --> KVM0
+    end
+
+    Replica0 -. "..." .- ReplicaN
+
+    %% Replica n Structure
+    subgraph ReplicaN [replica n]
+        direction TB
+        subgraph DaemonN [ ]
+            direction TB
+            SNFSDN("snfsd")
+            RL_N("replication<br>library")
+        end
+        KVMN("kernel VM")
+        
+        RL_N --> SNFSDN
+        SNFSDN --> KVMN
+    end
+
+    style Client_Top fill:none,stroke:none;
+    style Relay fill:none,stroke:#fff,stroke-width:1px,rx:10;
+    style Daemon0 fill:none,stroke:#fff,stroke-width:1px,rx:10;
+    style DaemonN fill:none,stroke:#fff,stroke-width:1px,rx:10;
+    style Client fill:none,stroke:#fff,stroke-width:3px,rx:15;
+    style Replica0 fill:none,stroke:#fff,stroke-width:3px,rx:15;
+    style ReplicaN fill:none,stroke:#fff,stroke-width:3px,rx:15;
+        </div>
+      </section>
+
+      <!-- Slide 13: Micro-Benchmark -->
+      <section>
+        <h2>Micro-Benchmark: Latency</h2>
+        <p style="font-size: 0.8em;">Network latency for processing 0KB requests/replies (ms)</p>
+        <div class="chart-container">
+            <canvas id="microBenchChart"></canvas>
+        </div>
+      </section>
+
+      <!-- Slide 14: Andrew Benchmark Overhead -->
+      <section>
+        <h2 style="font-size: 1.5em;">Andrew Benchmark: pBFT vs Unreplicated</h2>
+        <p style="font-size: 0.8em;">Overhead of adding pBFT vs non-replicated BFS (seconds)</p>
+        <div class="chart-container">
+            <canvas id="andrewBench1Chart"></canvas>
+        </div>
+      </section>
+
+      <!-- Slide 15: Andrew Benchmark Commercial -->
+      <section>
+        <h2 style="font-size: 1.5em;">Andrew Benchmark: pBFT vs Commercial NFS</h2>
+        <p style="font-size: 0.8em;">pBFT is competitive with standard industry NFS (seconds)</p>
+        <div class="chart-container">
+            <canvas id="andrewBench2Chart"></canvas>
+        </div>
+        <p style="font-size: 0.5em; margin-top: 0px;">BFS is faster in phases 1,2,5 because it avoids slow synchronous disk writes, using replicated RAM instead.</p>
+      </section>
+
+      <!-- Slide 16: Proactive Recovery -->
+      <section>
+        <h2>Proactive Recovery</h2>
+        <p style="font-size: 0.8em;">pBFT survives $f$ failures over its <em>entire lifespan</em>. For long-running systems, this is a limit.</p>
+        <ul style="font-size: 0.8em;">
+            <li><strong>Solution:</strong> Nodes periodically reboot from a secure hardware ROM (e.g., every 10-20 min).</li>
+            <li>They generate new secret keys to prevent identity theft.</li>
+            <li>This changes the limit to tolerating $f$ simultaneous failures within a short time window.</li>
+        </ul>
+      </section>
+
+      <!-- Slide 17: pBFT vs Contemporaries -->
+      <section>
+        <h2>pBFT vs Contemporaries</h2>
+        <div style="display:flex; justify-content: space-between; font-size: 0.65em;">
+            <div style="width: 32%;">
+                <h4>Raft / Paxos</h4>
+                <p>Fast and linearizable, but only tolerates Fail-Stop. One malicious node breaks the system.</p>
+            </div>
+            <div style="width: 32%;">
+                <h4>Bitcoin (PoW)</h4>
+                <p>Tolerates malicious nodes in open networks, but is slow, wastes energy, and can fork (probabilistic finality).</p>
+            </div>
+            <div style="width: 32%;">
+                <h4>pBFT</h4>
+                <p>Tolerates malicious nodes in closed groups. High performance and strict, immediate consistency.</p>
+            </div>
+        </div>
+        <p class="fragment" style="margin-top: 40px; font-size: 0.8em;"><strong>Modern Use Cases:</strong> Federated Blockchains (Stellar, IBM Hyperledger).</p>
+      </section>
+
+      <!-- Slide 18: Summary -->
+      <section>
+        <h2>Conclusion</h2>
+        <ul style="font-size: 0.8em;">
+            <li>pBFT brought Byzantine Fault Tolerance out of theoretical papers into practical systems.</li>
+            <li>Through ingenious use of MACs, batching, and 3-phase consensus, it achieves near-commercial performance.</li>
+            <li>It remains the architectural foundation for modern high-performance permissioned blockchains.</li>
+        </ul>
+        <h3 style="margin-top: 40px;">Questions?</h3>
+      </section>
+
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.js"></script>
+  <!-- Math plugin for formulas -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/plugin/math/math.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@9.4.3/dist/mermaid.min.js"></script>
+  <script>
+    mermaid.initialize({ startOnLoad: true, theme: 'dark' });
+    Reveal.initialize({
+        hash: true,
+        plugins: [ RevealMath.KaTeX ]
+    });
+
+    // Chart.js Default styling for Dark Theme
+    Chart.defaults.color = '#fff';
+    Chart.defaults.font.size = 14;
+
+    // Slide 13: Micro-Benchmark
+    const ctx1 = document.getElementById('microBenchChart').getContext('2d');
+    new Chart(ctx1, {
+        type: 'bar',
+        data: {
+            labels: ['0KB/0KB', '4KB/0KB', '0KB/4KB'],
+            datasets: [
+                {
+                    label: 'BFS Strict Replicated',
+                    data: [3.35, 14.19, 8.01],
+                    backgroundColor: 'rgba(255, 99, 132, 0.8)'
+                },
+                {
+                    label: 'BFS Read-only',
+                    data: [1.62, 6.98, 5.94],
+                    backgroundColor: 'rgba(54, 162, 235, 0.8)'
+                },
+                {
+                    label: 'Unreplicated (UDP)',
+                    data: [0.82, 4.62, 4.66],
+                    backgroundColor: 'rgba(255, 206, 86, 0.8)'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: { y: { title: { display: true, text: 'Latency (ms)' } } },
+            plugins: {
+                legend: { position: 'bottom' }
+            }
+        }
+    });
+
+    // Slide 14: Andrew Benchmark vs Unreplicated
+    const ctx2 = document.getElementById('andrewBench1Chart').getContext('2d');
+    new Chart(ctx2, {
+        type: 'bar',
+        data: {
+            labels: ['Phase 1 (Dirs)', 'Phase 2 (Copy)', 'Phase 3 (Meta)', 'Phase 4 (Data)', 'Phase 5 (Compile)', 'Total'],
+            datasets: [
+                {
+                    label: 'BFS Strict (pBFT)',
+                    data: [0.55, 9.24, 7.24, 8.77, 38.68, 64.48],
+                    backgroundColor: 'rgba(255, 99, 132, 0.8)'
+                },
+                {
+                    label: 'BFS-nr (Unreplicated)',
+                    data: [0.35, 5.08, 6.11, 7.41, 32.12, 51.07],
+                    backgroundColor: 'rgba(255, 206, 86, 0.8)'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: { y: { title: { display: true, text: 'Time (seconds)' } } },
+            plugins: {
+                legend: { position: 'bottom' }
+            }
+        }
+    });
+
+    // Slide 15: Andrew Benchmark Commercial
+    const ctx3 = document.getElementById('andrewBench2Chart').getContext('2d');
+    new Chart(ctx3, {
+        type: 'bar',
+        data: {
+            labels: ['Phase 1 (Dirs)', 'Phase 2 (Copy)', 'Phase 3 (Meta)', 'Phase 4 (Data)', 'Phase 5 (Compile)', 'Total'],
+            datasets: [
+                {
+                    label: 'BFS Strict (pBFT)',
+                    data: [0.55, 9.24, 7.24, 8.77, 38.68, 64.48],
+                    backgroundColor: 'rgba(255, 99, 132, 0.8)'
+                },
+                {
+                    label: 'Standard NFS (Commercial)',
+                    data: [1.75, 9.46, 5.36, 6.60, 39.35, 62.52],
+                    backgroundColor: 'rgba(75, 192, 192, 0.8)'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: { y: { title: { display: true, text: 'Time (seconds)' } } },
+            plugins: {
+                legend: { position: 'bottom' }
+            }
+        }
+    });
+
+  </script>
+</body>
+</html>
