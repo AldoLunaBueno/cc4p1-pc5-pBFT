@@ -104,47 +104,8 @@
       <!-- Slide 6.5: Normal Case Operation -->
       <section>
         <h2>Normal Case Operation</h2>
-        <div class="mermaid" style="font-size: 0.8em; margin-top: -20px;">
-sequenceDiagram
-    participant C as C
-    participant N0 as 0
-    participant N1 as 1
-    participant N2 as 2
-    participant N3 as 3
-
-    Note over N3: X (Inactive/Faulty)
-
-    Note over C, N3: request
-    C->>N0: 
-
-    Note over C, N3: pre-prepare
-    N0->>N1: 
-    N0->>N2: 
-    N0->>N3: 
-
-    Note over C, N3: prepare
-    N1->>N0: 
-    N1->>N2: 
-    N1->>N3: 
-    N2->>N0: 
-    N2->>N1: 
-    N2->>N3: 
-
-    Note over C, N3: commit
-    N0->>N1: 
-    N0->>N2: 
-    N0->>N3: 
-    N1->>N0: 
-    N1->>N2: 
-    N1->>N3: 
-    N2->>N0: 
-    N2->>N1: 
-    N2->>N3: 
-
-    Note over C, N3: reply
-    N0->>C: 
-    N1->>C: 
-    N2->>C:
+        <div style="height: 55vh; margin-top: 10px;">
+          <object data="normal-case.svg" type="image/svg+xml" width="100%" height="100%"></object>
         </div>
       </section>
 
@@ -220,66 +181,8 @@ sequenceDiagram
       <section>
         <h2>BFS Architecture</h2>
         <p style="font-size: 0.6em; margin-bottom: 0;">Replicated File System Architecture (NFS transparent to client)</p>
-        <div class="mermaid" style="font-size: 0.6em;">
-flowchart LR
-    %% Connections between client and replicas
-    RL_C <--> RL_0
-    RL_C <--> RL_N
-
-    %% Client Structure
-    subgraph Client [client]
-        direction TB
-        subgraph Client_Top [ ]
-            direction LR
-            AB("Andrew<br>benchmark")
-            subgraph Relay [relay]
-                direction TB
-                RL_C("replication<br>library")
-            end
-        end
-        KNFS("kernel NFS client")
-        
-        AB <--> KNFS
-        RL_C <--> KNFS
-    end
-
-    %% Replica 0 Structure
-    subgraph Replica0 [replica 0]
-        direction TB
-        subgraph Daemon0 [ ]
-            direction TB
-            SNFSD0("snfsd")
-            RL_0("replication<br>library")
-        end
-        KVM0("kernel VM")
-        
-        RL_0 --> SNFSD0
-        SNFSD0 --> KVM0
-    end
-
-    Replica0 -. "..." .- ReplicaN
-
-    %% Replica n Structure
-    subgraph ReplicaN [replica n]
-        direction TB
-        subgraph DaemonN [ ]
-            direction TB
-            SNFSDN("snfsd")
-            RL_N("replication<br>library")
-        end
-        KVMN("kernel VM")
-        
-        RL_N --> SNFSDN
-        SNFSDN --> KVMN
-    end
-
-    style Client_Top fill:none,stroke:none;
-    style Relay fill:none,stroke:#fff,stroke-width:1px,rx:10;
-    style Daemon0 fill:none,stroke:#fff,stroke-width:1px,rx:10;
-    style DaemonN fill:none,stroke:#fff,stroke-width:1px,rx:10;
-    style Client fill:none,stroke:#fff,stroke-width:3px,rx:15;
-    style Replica0 fill:none,stroke:#fff,stroke-width:3px,rx:15;
-    style ReplicaN fill:none,stroke:#fff,stroke-width:3px,rx:15;
+        <div style="height: 60vh; margin-top: 10px;">
+          <object data="bfs-architecture.svg" type="image/svg+xml" width="100%" height="100%"></object>
         </div>
       </section>
 
@@ -360,9 +263,7 @@ flowchart LR
   <!-- Math plugin for formulas -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/plugin/math/math.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mermaid@9.4.3/dist/mermaid.min.js"></script>
   <script>
-    mermaid.initialize({ startOnLoad: true, theme: 'dark' });
     Reveal.initialize({
         hash: true,
         plugins: [ RevealMath.KaTeX ]
