@@ -83,15 +83,20 @@
             <li>Of those $n-f$ responses, $f$ might be malicious nodes lying.</li>
             <li>For the honest nodes to outvote the malicious ones: $(n-f) - f > f \Rightarrow n > 3f$.</li>
         </ul>
-        <p class="fragment highlight-blue" style="font-size: 0.9em; margin-top: 20px;">Quorum Intersections guarantee at least one honest node is present in any $2f+1$ majority.</p>
+      </section>
+
+      <!-- Slide 4.5: Quorum Intersections -->
+      <section>
+        <h2>Quorum Intersections</h2>
+        <p style="font-size: 0.9em;">Guarantee at least one honest node is present in any $2f+1$ majority.</p>
 
         <!-- MathJax Formula Test -->
-        <div class="fragment" style="font-size: 0.8em; margin-top: 10px;">
+        <div style="font-size: 0.8em; margin-top: 10px;">
           $$ |Q_1 \cap Q_2| = |Q_1| + |Q_2| - |Q_1 \cup Q_2| \ge (2f+1) + (2f+1) - (3f+1) = f+1 $$
         </div>
 
         <!-- TikZ Diagram Test -->
-        <div class="fragment" style="margin-top: 10px;">
+        <div style="margin-top: 10px;">
           <script type="text/tikz">
             \begin{tikzpicture}[scale=0.8, every node/.style={transform shape}]
               \draw[fill=blue!40, opacity=0.6, draw=white, thick] (0,0) circle (1.5);
