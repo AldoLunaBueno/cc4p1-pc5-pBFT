@@ -18,7 +18,7 @@ To tolerate $f$ Byzantine failures, the minimum number of replicas required is $
 
 Another perspective to understand this rule is through quorum intersections. Committing an operation requires a quorum of $2f+1$ identical responses. If two distinct quorums of $2f+1$ intersect, their mathematical overlap will always contain at least $f+1$ replicas, inherently guaranteeing at least one honest node in the intersection.
 
-\begin{figure}[h!]
+\begin{figure}[H]
 \centering
 \begin{tikzpicture}[scale=1.5, every node/.style={transform shape}]
     \draw[fill=blue!40, opacity=0.6, draw=black, thick] (0,0) circle (1.5);

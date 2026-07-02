@@ -12,44 +12,84 @@ To tolerate Byzantine faults, the protocol requires three phases of communicatio
     \item \textbf{Commit:} Upon becoming ``prepared,'' the node broadcasts a \texttt{COMMIT} message. When a node aggregates $2f+1$ matching \texttt{COMMIT} messages, it achieves local commit status, executes the operation, and returns the response to the client.
 \end{enumerate}
 
-\begin{figure}[h!]
+\begin{figure}[H]
 \centering
-\begin{tikzpicture}[xscale=1.5, yscale=-0.6, thick]
-    \node at (1,0) {\textbf{C}};
-    \node at (2,0) {\textbf{0}};
-    \node at (3,0) {\textbf{1}};
-    \node at (4,0) {\textbf{2}};
-    \node[red] at (5,0) {\textbf{3 (Faulty)}};
-    
-    \draw (1,0.5) -- (1,15);
-    \draw (2,0.5) -- (2,15);
-    \draw (3,0.5) -- (3,15);
-    \draw (4,0.5) -- (4,15);
-    \draw[red, dashed] (5,0.5) -- (5,15);
+\begin{tikzpicture}[
+    xscale=1.4, 
+    yscale=1.1, 
+    >=Stealth, 
+    thick,
+    % Definición de estilo para las etiquetas de las fases
+    phase label/.style={font=\sffamily\bfseries, text depth=0pt}
+]
+    % --- 1. LÍNEAS HORIZONTALES (LÍNEAS DE VIDA) ---
+    % Alturas fijas para C, 0, 1, 2, 3 (invertido para que C quede arriba)
+    \draw (0,4) node[left, font=\sffamily\bfseries] {C} -- (13.5,4);
+    \draw (0,3) node[left, font=\sffamily\bfseries] {0} -- (13.5,3);
+    \draw (0,2) node[left, font=\sffamily\bfseries] {1} -- (13.5,2);
+    \draw (0,1) node[left, font=\sffamily\bfseries] {2} -- (13.5,1);
+    \draw (0,0) node[left, font=\sffamily\bfseries] {3} -- (13.5,0);
 
-    % Request
-    \draw[->] (1,1.5) -- node[above] {\scriptsize request} (2,1.5);
-    
-    % Pre-prepare
-    \draw[->] (2,3.0) -- node[above, near start] {\scriptsize pre-prepare} (3,3.5);
-    \draw[->] (2,3.0) -- (4,4.0);
-    \draw[->] (2,3.0) -- (5,4.5);
+    % --- 2. LÍNEAS VERTICALES DISCONTINUAS (FASES) ---
+    \draw[dashed, thin] (2.7, -0.5) -- (2.7, 4.5);
+    \draw[dashed, thin] (5.0, -0.5) -- (5.0, 4.5);
+    \draw[dashed, thin] (8.0, -0.5) -- (8.0, 4.5);
+    \draw[dashed, thin] (10.3, -0.5) -- (10.3, 4.5);
 
-    % Prepare
-    \node at (3.5, 5.0) {\scriptsize \textbf{prepare phase}};
-    \draw[->] (3,6.0) -- (2,6.5); \draw[->] (3,6.0) -- (4,7.0); \draw[->] (3,6.0) -- (5,7.5);
-    \draw[->] (4,6.0) -- (2,7.0); \draw[->] (4,6.0) -- (3,6.5); \draw[->] (4,6.0) -- (5,7.5);
+    % --- 3. ETIQUETAS DE LAS FASES ---
+    \node[phase label] at (1.35, 4.3) {request};
+    \node[phase label] at (3.85, 4.3) {pre-prepare};
+    \node[phase label] at (6.50, 4.3) {prepare};
+    \node[phase label] at (9.15, 4.3) {commit};
+    \node[phase label] at (11.90, 4.3) {reply};
 
-    % Commit
-    \node at (3.5, 8.5) {\scriptsize \textbf{commit phase}};
-    \draw[->] (2,9.5) -- (3,10.0); \draw[->] (2,9.5) -- (4,10.5); \draw[->] (2,9.5) -- (5,11.0);
-    \draw[->] (3,9.5) -- (2,10.0); \draw[->] (3,9.5) -- (4,10.5); \draw[->] (3,9.5) -- (5,11.0);
-    \draw[->] (4,9.5) -- (2,10.5); \draw[->] (4,9.5) -- (3,10.0); \draw[->] (4,9.5) -- (5,11.0);
+    % --- 4. MARCA DE FALLO (X en el Nodo 3) ---
+    \node[font=\sffamily\bfseries\Large, text=black, fill=white, inner sep=1pt, circle, scale=0.8] at (1.4, 0) {$\mathbf{\times}$};
 
-    % Reply
-    \draw[->] (2,12.0) -- node[above] {\scriptsize reply} (1,12.5);
-    \draw[->] (3,12.5) -- node[above] {\scriptsize reply} (1,13.0);
-    \draw[->] (4,13.0) -- node[above] {\scriptsize reply} (1,13.5);
+    % --- 5. SOLICITUD (REQUEST) ---
+    \draw[->] (0.2,4) -- (2.5,3);
+
+    % --- 6. FASE PRE-PREPARE ---
+    % Desde el Nodo 0 (líder) hacia los respaldos (1, 2, 3) al final de la fase
+    \draw[->] (2.8,3) -- (4.9,2);
+    \draw[->] (2.8,3) -- (4.9,1);
+    \draw[->] (2.8,3) -- (4.9,0);
+
+    % --- 7. FASE PREPARE ---
+    % Intercambio cruzado total entre nodos 1 y 2, y emisión hacia 0 y 3
+    % Mensajes desde Nodo 1:
+    \draw[->] (5.1,2) -- (7.8,3);
+    \draw[->] (5.1,2) -- (7.8,1);
+    \draw[->] (5.1,2) -- (7.8,0);
+
+    % Mensajes desde Nodo 2:
+    \draw[->] (5.1,1) -- (7.8,3);
+    \draw[->] (5.1,1) -- (7.8,2);
+    \draw[->] (5.1,1) -- (7.8,0);
+
+    % --- 8. FASE COMMIT ---
+    % Intercambio generalizado todos a todos (Nodos activos: 0, 1, 2 hacia 0, 1, 2, 3)
+    % Mensajes desde Nodo 0:
+    \draw[->] (8.2,3) -- (10.1,2);
+    \draw[->] (8.2,3) -- (10.1,1);
+    \draw[->] (8.2,3) -- (10.1,0);
+
+    % Mensajes desde Nodo 1:
+    \draw[->] (8.2,2) -- (10.1,3);
+    \draw[->] (8.2,2) -- (10.1,1);
+    \draw[->] (8.2,2) -- (10.1,0);
+
+    % Mensajes desde Nodo 2:
+    \draw[->] (8.2,1) -- (10.1,3);
+    \draw[->] (8.2,1) -- (10.1,2);
+    \draw[->] (8.2,1) -- (10.1,0);
+
+    % --- 9. FASE DE RESPUESTA (REPLY) ---
+    % Respuestas consecutivas de los nodos honestos (0, 1, 2) hacia el cliente C
+    \draw[->] (10.6,3) -- (12.8,4);
+    \draw[->] (10.6,2) -- (13.1,4);
+    \draw[->] (10.6,1) -- (13.4,4);
+
 \end{tikzpicture}
 \caption{Sequence diagram of the normal case operation where node 3 is faulty}
 \end{figure}

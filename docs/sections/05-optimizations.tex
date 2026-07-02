@@ -39,6 +39,125 @@ To empirically demonstrate the "practical" value of pBFT, the authors developed 
 \caption{Simplified BFS Architecture}
 \end{figure}
 
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    >=Stealth,
+    thick,
+    % Estilo para las cajas divididas (relay y snfsd)
+    splitbox/.style={
+        rectangle split, 
+        rectangle split parts=2, 
+        draw, 
+        rounded corners=4pt, 
+        fill=white,
+        text width=2.2cm, 
+        align=center, 
+        font=\small,
+        inner sep=5pt
+    },
+    % Estilo para las cajas simples (Andrew benchmark)
+    innerbox/.style={
+        draw, 
+        rounded corners=4pt, 
+        fill=white, 
+        minimum width=2.2cm, 
+        minimum height=1.6cm, 
+        text width=2cm, 
+        align=center, 
+        font=\small
+    },
+    % Estilo para el Kernel
+    kernelbox/.style={
+        draw, 
+        rounded corners=2pt,
+        fill=white, 
+        minimum height=0.7cm, 
+        align=center, 
+        font=\small
+    },
+    % Estilo para las cajas exteriores (Sombreado Gris)
+    outerbox/.style={
+        draw, 
+        rounded corners=8pt, 
+        fill=gray!15, % <-- Sombreado gris añadido
+        inner sep=12pt
+    }
+]
+
+    % ==========================================
+    % CLIENTE (BLOQUE IZQUIERDO)
+    % ==========================================
+    % Componentes internos
+    \node[innerbox] (andrew) at (0, 0) {Andrew\\benchmark};
+    \node[splitbox] (relay) at (3.2, 0) {relay\nodepart{two}replication\\library};
+    \node[kernelbox, minimum width=5.4cm] (knfs) at (1.6, -2.0) {kernel NFS client};
+    
+    % Flechas internas del cliente
+    \draw[<->, shorten >=2pt, shorten <=2pt] (andrew.south) -- (andrew.south |- knfs.north);
+    \draw[<->, shorten >=2pt, shorten <=2pt] (relay.south) -- (relay.south |- knfs.north);
+    
+    % Caja exterior ajustada al contenido
+    \begin{scope}[on background layer]
+        \node[outerbox, fit=(andrew) (relay) (knfs)] (clientbox) {};
+    \end{scope}
+    \node[anchor=south west, font=\bfseries] at (clientbox.north west) {client};
+
+
+    % ==========================================
+    % RÉPLICA 0 (BLOQUE SUPERIOR DERECHO)
+    % ==========================================
+    % Componentes internos
+    \node[splitbox] (snfsd0) at (9.5, 1.8) {snfsd\nodepart{two}replication\\library};
+    \node[kernelbox, minimum width=2.6cm] (kvm0) at (9.5, -0.2) {kernel VM};
+    
+    % Flecha interna de la réplica (sale de snfsd, baja y entra a la VM)
+    \draw[->] (snfsd0.text east) -- ++(0.4,0) |- (kvm0.east);
+    
+    % Caja exterior ajustada
+    \begin{scope}[on background layer]
+        \node[outerbox, fit=(snfsd0) (kvm0)] (rep0box) {};
+    \end{scope}
+    \node[anchor=south west, font=\bfseries] at (rep0box.north west) {replica 0};
+
+
+    % ==========================================
+    % PUNTOS SUSPENSIVOS VERTICALES
+    % ==========================================
+    \fill (9.5, -1.4) circle (2pt);
+    \fill (9.5, -1.8) circle (2pt);
+    \fill (9.5, -2.2) circle (2pt);
+
+
+    % ==========================================
+    % RÉPLICA N (BLOQUE INFERIOR DERECHO)
+    % ==========================================
+    % Componentes internos
+    \node[splitbox] (snfsdn) at (9.5, -4.0) {snfsd\nodepart{two}replication\\library};
+    \node[kernelbox, minimum width=2.6cm] (kvmn) at (9.5, -6.0) {kernel VM};
+    
+    % Flecha interna de la réplica (sale de snfsd, baja y entra a la VM)
+    \draw[->] (snfsdn.text east) -- ++(0.4,0) |- (kvmn.east);
+    
+    % Caja exterior ajustada
+    \begin{scope}[on background layer]
+        \node[outerbox, fit=(snfsdn) (kvmn)] (repnbox) {};
+    \end{scope}
+    \node[anchor=south west, font=\bfseries] at (repnbox.north west) {replica n};
+
+
+    % ==========================================
+    % CONEXIONES DE RED
+    % ==========================================
+    % Conectan la librería de replicación del cliente (parte 2 del relay) 
+    % con las librerías de replicación de las réplicas (parte 2 del snfsd)
+    \draw[<->, shorten >=2pt, shorten <=2pt] (relay.two east) -- (snfsd0.two west);
+    \draw[<->, shorten >=2pt, shorten <=2pt] (relay.two east) -- (snfsdn.two west);
+
+\end{tikzpicture}
+\caption{BFS Architecture Diagram}
+\end{figure}
+
 By subjecting BFS to the demanding \textit{Andrew benchmark}, the authors proved that the performance penalty incurred is remarkably small:
 
 \begin{table}[h!]

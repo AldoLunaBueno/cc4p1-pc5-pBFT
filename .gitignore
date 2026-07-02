@@ -1,2 +1,11 @@
 sources/
 .opencode/
+
+# Documentos de compilación de LaTeX
+*.out
+*.log
+*.toc
+*.aux
+*.fdb_latexmk
+*.fls
+*.gz
