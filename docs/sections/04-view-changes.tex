@@ -1,0 +1,10 @@
+\section{View Changes (Leader Fault Tolerance)}
+To maintain the system's liveness when the primary node fails or acts maliciously, nodes transition through a succession of configurations called \textit{views}.
+
+Backup nodes monitor the primary's behavior using timers (\textit{timeouts}). A backup initiates a timer upon receiving a request; if the timer expires without any progress in processing, the backup assumes the leader is defective and halts the execution of the normal protocol.
+
+The node ceases to accept normal operation messages and broadcasts a \texttt{VIEW-CHANGE} message requesting a transition to the next view ($v+1$). To be valid, this message appends cryptographic proofs of its latest stable checkpoint as well as all operations that had already reached the locally prepared state.
+
+The new leader, designated by the formula $v \bmod N$ (where $N$ is the total number of nodes), takes control after aggregating at least $2f$ of these messages. It then issues a \texttt{NEW-VIEW} message containing consolidated proofs to resume the interrupted operations, ensuring that no operation already confirmed to a client is ever lost, and using null operations (\textit{no-ops}) to fill any empty slots in the sequence numbers. 
+
+To prevent abuses, the protocol implements forced rotation and exponential timeout backing off in case of repetitive, failed view changes.

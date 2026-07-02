@@ -1,0 +1,55 @@
+\section{The Protocol in the Normal Case}
+
+\subsection{State Machine Replication}
+pBFT models the service as a deterministic state machine. All replicas must start in the same initial state and execute operations identically. The primary challenge is to guarantee that all honest replicas execute the same requests in the exact same total order. The system progresses through sequences of \textbf{views}. In each view, one replica assumes the role of the \textbf{primary (leader)}, while the remaining replicas act as \textbf{backups}.
+
+\subsection{The 3-Phase Protocol}
+To tolerate Byzantine faults, the protocol requires three phases of communication:
+
+\begin{enumerate}
+    \item \textbf{Pre-prepare:} The primary receives a client request, assigns a sequence number to it, and broadcasts a \texttt{PRE-PREPARE} message to the backups.
+    \item \textbf{Prepare:} A backup verifies the message and broadcasts a \texttt{PREPARE} message to all other replicas. A node considers itself ``prepared'' once it has collected the original request/message plus a quorum of $2f$ matching \texttt{PREPARE} messages.
+    \item \textbf{Commit:} Upon becoming ``prepared,'' the node broadcasts a \texttt{COMMIT} message. When a node aggregates $2f+1$ matching \texttt{COMMIT} messages, it achieves local commit status, executes the operation, and returns the response to the client.
+\end{enumerate}
+
+\begin{figure}[h!]
+\centering
+\begin{tikzpicture}[xscale=1.5, yscale=-0.6, thick]
+    \node at (1,0) {\textbf{C}};
+    \node at (2,0) {\textbf{0}};
+    \node at (3,0) {\textbf{1}};
+    \node at (4,0) {\textbf{2}};
+    \node[red] at (5,0) {\textbf{3 (Faulty)}};
+    
+    \draw (1,0.5) -- (1,15);
+    \draw (2,0.5) -- (2,15);
+    \draw (3,0.5) -- (3,15);
+    \draw (4,0.5) -- (4,15);
+    \draw[red, dashed] (5,0.5) -- (5,15);
+
+    % Request
+    \draw[->] (1,1.5) -- node[above] {\scriptsize request} (2,1.5);
+    
+    % Pre-prepare
+    \draw[->] (2,3.0) -- node[above, near start] {\scriptsize pre-prepare} (3,3.5);
+    \draw[->] (2,3.0) -- (4,4.0);
+    \draw[->] (2,3.0) -- (5,4.5);
+
+    % Prepare
+    \node at (3.5, 5.0) {\scriptsize \textbf{prepare phase}};
+    \draw[->] (3,6.0) -- (2,6.5); \draw[->] (3,6.0) -- (4,7.0); \draw[->] (3,6.0) -- (5,7.5);
+    \draw[->] (4,6.0) -- (2,7.0); \draw[->] (4,6.0) -- (3,6.5); \draw[->] (4,6.0) -- (5,7.5);
+
+    % Commit
+    \node at (3.5, 8.5) {\scriptsize \textbf{commit phase}};
+    \draw[->] (2,9.5) -- (3,10.0); \draw[->] (2,9.5) -- (4,10.5); \draw[->] (2,9.5) -- (5,11.0);
+    \draw[->] (3,9.5) -- (2,10.0); \draw[->] (3,9.5) -- (4,10.5); \draw[->] (3,9.5) -- (5,11.0);
+    \draw[->] (4,9.5) -- (2,10.5); \draw[->] (4,9.5) -- (3,10.0); \draw[->] (4,9.5) -- (5,11.0);
+
+    % Reply
+    \draw[->] (2,12.0) -- node[above] {\scriptsize reply} (1,12.5);
+    \draw[->] (3,12.5) -- node[above] {\scriptsize reply} (1,13.0);
+    \draw[->] (4,13.0) -- node[above] {\scriptsize reply} (1,13.5);
+\end{tikzpicture}
+\caption{Sequence diagram of the normal case operation where node 3 is faulty}
+\end{figure}

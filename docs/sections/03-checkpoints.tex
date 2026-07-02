@@ -1,0 +1,10 @@
+\section{Garbage Collection and Checkpoints}
+In pBFT, each replica must store messages in a log. However, memory resources necessitate a garbage collection mechanism to periodically truncate this log so that it does not grow indefinitely.
+
+\subsection{Stable Checkpoint Generation}
+The protocol periodically generates cryptographic proofs (e.g., every 100 requests) confirming that a consolidated state is correct, which is referred to as a \textbf{checkpoint}. When a replica generates a checkpoint, it broadcasts a \texttt{CHECKPOINT} message to all other replicas.
+
+This checkpoint transitions into a \textbf{stable checkpoint} once the replica successfully aggregates a total of $2f+1$ identical checkpoint messages from other nodes. This quorum proves that an honest majority of the system agrees on the current state. Upon achieving stability, the replica safely purges all messages related to the \texttt{pre-prepare}, \texttt{prepare}, and \texttt{commit} phases that have sequence numbers equal to or lower than that of the stable checkpoint.
+
+\subsection{Watermarks and State Transfer}
+The protocol establishes strict operating boundaries defined by two watermarks: the low watermark ($h$), which matches the sequence number of the latest stable checkpoint, and the high watermark ($H = h + k$). This range restricts the sequence numbers of valid operations, preventing a malicious leader from intentionally assigning massive sequence numbers to exhaust memory space. Furthermore, pBFT utilizes a hierarchical state tree combined with a \textit{copy-on-write} memory management technique to perform efficient state transfers and mathematical updates without halting the entire system, thereby accelerating the recovery of slow or lagging nodes.

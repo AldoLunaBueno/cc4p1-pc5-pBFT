@@ -1,0 +1,57 @@
+\section{Cryptography, Practical Optimizations, and Performance}
+pBFT resolves cryptographic latency bottlenecks by reserving expensive public-key signatures (such as RSA) exclusively for critical operational transitions like view changes. In the normal case, it employs symmetric-key cryptography \textbf{Message Authentication Codes (MACs)} for the overwhelming majority of interactions, which perform orders of magnitude faster.
+
+Additionally, it optimizes data transmission overhead by instructing only one designated replica to send the complete response payload back to the client, while the remaining nodes transmit only small cryptographic digests. For high-demand environments, pBFT utilizes request batching within a single consensus sequence and enables a fast path for read-only operations.
+
+\subsection{Byzantine File System (BFS) Architecture}
+To empirically demonstrate the "practical" value of pBFT, the authors developed a replication library upon which they implemented the Byzantine-Fault-tolerant File System (BFS). This filesystem supports the standard NFS V2 network protocol transparently, requiring no modifications to either the client or the original kernel server.
+
+\begin{figure}[h!]
+\centering
+\begin{tikzpicture}[xscale=1.2, yscale=1.2, thick]
+    % Client
+    \draw[rounded corners, fill=black!5] (0,0) rectangle (4,4.5) node[pos=0.5, yshift=2.0cm] {\textbf{Client}};
+    \node[draw, rounded corners, fill=white] (andrew) at (2, 3.5) {Andrew benchmark};
+    
+    \node[draw, rounded corners, minimum width=2.5cm, minimum height=1.5cm, fill=white] (relay_box) at (2, 2) {};
+    \node[anchor=north] at (relay_box.north) {\footnotesize relay};
+    \node[draw, fill=gray!20, text width=2cm, align=center] (replib_c) at (2, 1.8) {\footnotesize replication\\ \footnotesize library};
+    
+    \node[draw, fill=white] (knfs) at (2, 0.5) {kernel NFS client};
+    
+    \draw[<->] (andrew) -- (relay_box);
+    \draw[<->] (relay_box) -- (knfs);
+
+    % Replica
+    \draw[rounded corners, fill=black!5] (6,1) rectangle (10,4.5) node[pos=0.5, yshift=1.5cm] {\textbf{Replicas (0 to n)}};
+    
+    \node[draw, rounded corners, minimum width=2.8cm, minimum height=1.5cm, fill=white] (daemon0) at (8, 2.7) {};
+    \node[anchor=north] at (daemon0.north) {\footnotesize snfsd};
+    \node[draw, fill=gray!20, text width=2cm, align=center] (replib_0) at (8, 2.4) {\footnotesize replication\\ \footnotesize library};
+    
+    \node[draw, fill=white] (kvm) at (8, 1.5) {kernel VM};
+    
+    \draw[<->] (daemon0) -- (kvm);
+
+    % Connections
+    \draw[<->] (replib_c.east) -- (replib_0.west);
+\end{tikzpicture}
+\caption{Simplified BFS Architecture}
+\end{figure}
+
+By subjecting BFS to the demanding \textit{Andrew benchmark}, the authors proved that the performance penalty incurred is remarkably small:
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{|l|c|c|c|}
+\hline
+\textbf{Benchmark Phases} & \textbf{BFS (pBFT)} & \textbf{BFS-nr (Unrep.)} & \textbf{NFS-std (Commercial)} \\ \hline
+1. Create directories & 0.55 & 0.35 & 1.75 \\ \hline
+2. Copy files & 9.24 & 5.08 & 9.46 \\ \hline
+3. Read metadata & 7.24 & 6.11 & 5.36 \\ \hline
+4. Read data & 8.77 & 7.41 & 6.60 \\ \hline
+5. Compile and link & 38.68 & 32.12 & 39.35 \\ \hline
+\textbf{Total Time (seconds)} & \textbf{64.48} & \textbf{51.07} & \textbf{62.52} \\ \hline
+\end{tabular}
+\caption{Andrew Benchmark Results. The pBFT (BFS) execution time proved to be only roughly 3\% slower than or even competitive with industry-standard commercial NFS.}
+\end{table}

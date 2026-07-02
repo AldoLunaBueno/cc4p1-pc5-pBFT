@@ -1,0 +1,30 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel} % Cambiado a inglés para los títulos automáticos (Contents, Date, etc.)
+\usepackage{amsmath, amssymb}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{shapes, arrows.meta, positioning, calc}
+\usepackage{hyperref}
+\usepackage{geometry}
+\geometry{left=2.5cm, right=2.5cm, top=2.5cm, bottom=2.5cm}
+
+\title{\textbf{Technical Report: Practical Byzantine Fault Tolerance (pBFT)}}
+\author{Aldo Luna Bueno \\ 20170325B}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+\input{sections/01-introduction.tex}
+\input{sections/02-normal-operation.tex}
+\input{sections/03-checkpoints.tex}
+\input{sections/04-view-changes.tex}
+\input{sections/05-optimizations.tex}
+\input{sections/06-advanced-concepts.tex}
+\input{sections/07-conclusions.tex}
+
+\end{document}
