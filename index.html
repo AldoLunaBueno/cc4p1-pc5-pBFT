@@ -279,10 +279,40 @@
                 <p>Tolerates malicious nodes in closed groups. High performance and strict, immediate consistency.</p>
             </div>
         </div>
-        <p class="fragment" style="margin-top: 40px; font-size: 0.8em;"><strong>Modern Use Cases:</strong> Federated Blockchains (Stellar, IBM Hyperledger).</p>
       </section>
 
-      <!-- Slide 18: Summary -->
+      <!-- Slide 18: Initial Rejection & Paradigm Shift -->
+      <section>
+        <h2>Initial Rejection & Paradigm Shift</h2>
+        <ul style="font-size: 0.8em;">
+            <li class="fragment"><strong>The "Academic" Era (1999):</strong> Industry largely ignored pBFT. They relied on firewalls and access controls to <em>prevent</em> breaches, dealing only with fail-stop errors.</li>
+            <li class="fragment"><strong>The Bitcoin Revolution (2009):</strong> Re-popularized Byzantine Fault Tolerance via Proof-of-Work, but introduced unacceptable trade-offs for enterprises:
+                <ul>
+                    <li>Low throughput (~1000 tx/min).</li>
+                    <li>Extreme latency (1 hour for 6-block finality).</li>
+                    <li>No strict linearizability (vulnerable to forks).</li>
+                </ul>
+            </li>
+        </ul>
+      </section>
+
+      <!-- Slide 19: The pBFT Renaissance -->
+      <section>
+        <h2>The pBFT Renaissance</h2>
+        <p style="font-size: 0.9em;">Decades later, pBFT's design matches modern needs perfectly.</p>
+        <div style="display:flex; justify-content: space-between; font-size: 0.7em; margin-top: 20px;">
+            <div style="width: 48%; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px;">
+                <h4>Zero Trust Architecture</h4>
+                <p>"Never trust, always verify." Assumes the network is already breached. pBFT natively operates under this breach assumption by relying on cryptographic quorums instead of implicit internal trust.</p>
+            </div>
+            <div style="width: 48%; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px;">
+                <h4>Enterprise Blockchains</h4>
+                <p>Systems requiring Bitcoin's resilience but corporate database speeds use pBFT. Examples: <strong>Stellar</strong> (federated low-cost global transfers) and <strong>IBM Hyperledger</strong> (instant, irreversible B2B transactions).</p>
+            </div>
+        </div>
+      </section>
+
+      <!-- Slide 20: Summary -->
       <section>
         <h2>Conclusion</h2>
         <ul style="font-size: 0.8em;">
