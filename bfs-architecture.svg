@@ -1,10 +1,79 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 400" width="100%" height="100%"><style>
-        .line { stroke: var(--line-color, #ffffff); stroke-width: 2; fill: none; }
-        .dashed { stroke: var(--line-color, #ffffff); stroke-width: 2; fill: none; stroke-dasharray: 5,5; }
-        .arrow { fill: var(--line-color, #ffffff); }
-        .text { fill: var(--text-color, #ffffff); font-family: sans-serif; font-size: 14px; text-anchor: middle; alignment-baseline: middle; }
-        .text-bold { fill: var(--text-color, #ffffff); font-family: sans-serif; font-size: 16px; font-weight: bold; text-anchor: middle; alignment-baseline: middle; }
-        .box { fill: var(--box-bg, rgba(255,255,255,0.05)); stroke: var(--box-border, #ffffff); stroke-width: 2; rx: 10; }
-        .box-inner { fill: none; stroke: var(--box-border, #ffffff); stroke-width: 1; rx: 5; }
-        .label { fill: var(--text-color, #ffffff); font-family: sans-serif; font-size: 12px; text-anchor: middle; }
-    </style><defs><marker id="arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" class="arrow" /></marker><marker id="arrow-start" viewBox="0 0 10 10" refX="0" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 10 0 L 0 5 L 10 10 z" class="arrow" /></marker></defs><rect x="50" y="50" width="250" height="300" class="box" /><text x="175" y="70" class="text-bold">client</text><rect x="70" y="100" width="100" height="60" class="box-inner" /><text x="120" y="125" class="text">Andrew</text><text x="120" y="145" class="text">benchmark</text><rect x="180" y="100" width="100" height="90" class="box-inner" /><text x="230" y="115" class="label">relay</text><rect x="190" y="130" width="80" height="50" class="box-inner" /><text x="230" y="150" class="text">replication</text><text x="230" y="165" class="text">library</text><rect x="70" y="250" width="210" height="60" class="box-inner" /><text x="175" y="280" class="text">kernel NFS client</text><line x1="120" y1="160" x2="120" y2="250" class="line" marker-start="url(#arrow-start)" marker-end="url(#arrow)" /><line x1="230" y1="190" x2="230" y2="250" class="line" marker-start="url(#arrow-start)" marker-end="url(#arrow)" /><rect x="400" y="50" width="200" height="300" class="box" /><text x="500" y="70" class="text-bold">replica 0</text><rect x="420" y="90" width="160" height="120" class="box-inner" /><text x="500" y="110" class="text">snfsd</text><rect x="440" y="130" width="120" height="60" class="box-inner" /><text x="500" y="155" class="text">replication</text><text x="500" y="175" class="text">library</text><rect x="420" y="250" width="160" height="60" class="box-inner" /><text x="500" y="280" class="text">kernel VM</text><line x1="500" y1="210" x2="500" y2="250" class="line" marker-end="url(#arrow)" /><rect x="650" y="50" width="200" height="300" class="box" /><text x="750" y="70" class="text-bold">replica n</text><rect x="670" y="90" width="160" height="120" class="box-inner" /><text x="750" y="110" class="text">snfsd</text><rect x="690" y="130" width="120" height="60" class="box-inner" /><text x="750" y="155" class="text">replication</text><text x="750" y="175" class="text">library</text><rect x="670" y="250" width="160" height="60" class="box-inner" /><text x="750" y="280" class="text">kernel VM</text><line x1="750" y1="210" x2="750" y2="250" class="line" marker-end="url(#arrow)" /><text x="625" y="200" class="text-bold">. . .</text><line x1="270" y1="150" x2="440" y2="150" class="line" marker-start="url(#arrow-start)" marker-end="url(#arrow)" /><line x1="270" y1="165" x2="690" y2="165" class="line" marker-start="url(#arrow-start)" marker-end="url(#arrow)" /></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="100%" height="100%">
+  <defs>
+    <marker id="arrow-start" markerWidth="3" markerHeight="3" refX="0.5" refY="1.5" orient="auto"><polygon points="3,0 0,1.5 3,3" class="marker-path" /></marker>
+    <marker id="arrow-end" markerWidth="3" markerHeight="3" refX="2.5" refY="1.5" orient="auto"><polygon points="0,0 3,1.5 0,3" class="marker-path" /></marker>
+  </defs>
+
+  
+  <style>
+    .outer-box { fill: rgba(255, 255, 255, 0.05); stroke: var(--line-color, #ffffff); stroke-width: 3; }
+    .inner-box { fill: none; stroke: var(--line-color, #ffffff); stroke-width: 2; }
+    .outer-divider { stroke: var(--line-color, #ffffff); stroke-width: 3; }
+    .inner-divider { stroke: var(--line-color, #ffffff); stroke-width: 2; }
+    .arrow { stroke: var(--line-color, #ffffff); stroke-width: 3; fill: none; stroke-linejoin: miter; }
+    .text-label { fill: var(--text-color, #ffffff); font-family: sans-serif; font-weight: bold; font-size: 20px; }
+    .text-inner { fill: var(--text-color, #ffffff); font-family: sans-serif; font-size: 18px; text-anchor: middle; }
+    .dots { fill: var(--line-color, #ffffff); }
+    .marker-path { fill: var(--line-color, #ffffff); }
+  </style>
+
+
+  <text x="60" y="180" class="text-label" text-anchor="start">client</text>
+  
+  <rect x="50" y="190" width="400" height="250" rx="20" class="outer-box" />
+  <line x1="50" y1="390" x2="450" y2="390" class="outer-divider" />
+  <text x="250" y="423" class="text-inner">kernel NFS client</text>
+
+  <rect x="80" y="235" width="150" height="110" rx="15" class="inner-box" />
+  <text x="155" y="280" class="text-inner">Andrew</text>
+  <text x="155" y="305" class="text-inner">benchmark</text>
+
+  <rect x="270" y="235" width="150" height="110" rx="15" class="inner-box" />
+  <line x1="270" y1="275" x2="420" y2="275" class="inner-divider" />
+  <text x="345" y="261" class="text-inner">relay</text>
+  <text x="345" y="300" class="text-inner">replication</text>
+  <text x="345" y="325" class="text-inner">library</text>
+
+
+  <text x="530" y="45" class="text-label" text-anchor="start">replica 0</text>
+  
+  <rect x="520" y="55" width="220" height="200" rx="20" class="outer-box" />
+  <line x1="520" y1="205" x2="740" y2="205" class="outer-divider" />
+  <text x="630" y="236" class="text-inner">kernel VM</text>
+
+  <rect x="540" y="80" width="150" height="100" rx="15" class="inner-box" />
+  <line x1="540" y1="120" x2="690" y2="120" class="inner-divider" />
+  <text x="615" y="106" class="text-inner">snfsd</text>
+  <text x="615" y="142" class="text-inner">replication</text>
+  <text x="615" y="167" class="text-inner">library</text>
+
+
+  <circle cx="630" cy="285" r="4" class="dots" />
+  <circle cx="630" cy="302.5" r="4" class="dots" />
+  <circle cx="630" cy="320" r="4" class="dots" />
+
+
+  <text x="530" y="340" class="text-label" text-anchor="start">replica n</text>
+  
+  <rect x="520" y="350" width="220" height="200" rx="20" class="outer-box" />
+  <line x1="520" y1="500" x2="740" y2="500" class="outer-divider" />
+  <text x="630" y="531" class="text-inner">kernel VM</text>
+
+  <rect x="540" y="375" width="150" height="100" rx="15" class="inner-box" />
+  <line x1="540" y1="415" x2="690" y2="415" class="inner-divider" />
+  <text x="615" y="401" class="text-inner">snfsd</text>
+  <text x="615" y="437" class="text-inner">replication</text>
+  <text x="615" y="462" class="text-inner">library</text>
+
+
+  <line x1="155" y1="345" x2="155" y2="390" class="arrow" marker-start="url(#arrow-start)" marker-end="url(#arrow-end)" />
+  <line x1="345" y1="345" x2="345" y2="390" class="arrow" marker-start="url(#arrow-start)" marker-end="url(#arrow-end)" />
+
+  <line x1="420" y1="310" x2="540" y2="150" class="arrow" marker-start="url(#arrow-start)" marker-end="url(#arrow-end)" />
+  <line x1="420" y1="310" x2="540" y2="445" class="arrow" marker-start="url(#arrow-start)" marker-end="url(#arrow-end)" />
+
+  <polyline points="660,100 715,100 715,225" class="arrow" marker-start="url(#arrow-start)" marker-end="url(#arrow-end)" />
+
+  <polyline points="660,395 715,395 715,520" class="arrow" marker-start="url(#arrow-start)" marker-end="url(#arrow-end)" />
+
+</svg>
