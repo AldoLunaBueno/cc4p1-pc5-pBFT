@@ -3,49 +3,108 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-
   <title>Practical Byzantine Fault Tolerance (pBFT)</title>
 
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reset.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/theme/night.min.css">
-  
-    <!-- 1. Estilos y Script para Gráficos TikZ (TikZJax) -->
-    <link rel="stylesheet" type="text/css" href="https://tikzjax.com/v1/fonts.css">
-    <script src="https://tikzjax.com/v1/tikzjax.js" async></script>
+  <!-- TikZJax -->
+  <link rel="stylesheet" type="text/css" href="https://tikzjax.com/v1/fonts.css">
+  <script src="https://tikzjax.com/v1/tikzjax.js" async></script>
 
-    <!-- 2. Script para Fórmulas Matemáticas (MathJax) -->
-    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script> 
+  <!-- MathJax -->
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script> 
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
-    .reveal h1, .reveal h2, .reveal h3, .reveal h4, .reveal h5, .reveal h6 {
-        text-transform: none;
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background-color: #111;
+      color: #fff;
+      font-family: "Aptos", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+      overflow: hidden;
+    }
+    .slides-container {
+      height: 100vh;
+      overflow-y: scroll;
+      scroll-snap-type: y mandatory;
+      scroll-behavior: smooth;
+    }
+    .slide {
+      min-height: 100vh;
+      width: 100vw;
+      scroll-snap-align: start;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      box-sizing: border-box;
+      padding: 50px 10%;
+      position: relative;
+    }
+    h2 {
+      color: #fff;
+      margin-bottom: 30px;
+      font-size: 2.5em;
+      text-align: center;
+      font-weight: 700;
+    }
+    h3 {
+      font-size: 2em;
+    }
+    p, ul, ol, li {
+      font-size: 1.2em;
+      line-height: 1.6;
+    }
+    ul, ol {
+      margin-left: 20px;
+      max-width: 900px;
+      width: 100%;
+    }
+    p {
+      max-width: 900px;
+      text-align: center;
     }
     .chart-container {
-        position: relative; 
-        height: 50vh; 
-        width: 80vw;
-        margin: 0 auto;
+      position: relative; 
+      height: 50vh; 
+      width: 80vw;
+      max-width: 1000px;
+      margin: 0 auto;
     }
-    .highlight-red { color: #ff2c2d; }
-    .highlight-blue { color: #1b91ff; }
-    .highlight-green { color: #17ff2e; }
+    .highlight-red { color: #ff2c2d; font-weight: bold; }
+    .highlight-blue { color: #1b91ff; font-weight: bold; }
+    .highlight-green { color: #17ff2e; font-weight: bold; }
+    
+    ::-webkit-scrollbar {
+      width: 0px;
+      background: transparent;
+    }
+    
+    .nav-hint {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      opacity: 0.3;
+      font-size: 0.8em;
+      pointer-events: none;
+    }
   </style>
 </head>
 <body>
-  <div class="reveal">
-    <div class="slides">
+  <div class="slides-container">
+
 
       <!-- Slide 1: Title -->
-      <section>
+      <div class="slide">
         <h2>Practical Byzantine Fault Tolerance (pBFT)</h2>
         <p>A resilient consensus algorithm for distributed systems</p>
         <p><small>Based on the seminal work of Castro and Liskov</small></p>
-      </section>
+      </div>
 
       <!-- Slide 2: What is a Byzantine Fault -->
-      <section>
-        <section>
+      <div class="slide">
             <h2>From "Fail-Stop" to "Byzantine"</h2>
             <p>Traditional fault tolerance handled <strong>Fail-Stop</strong> errors (hardware crash).</p>
             <p class="fragment">What happens when a node <em>doesn't</em> shut down?</p>
@@ -54,16 +113,15 @@
                 <li>Malicious hackers</li>
                 <li>Nodes send conflicting or fake data</li>
             </ul>
-        </section>
-        <section>
+        </div>
+<div class="slide">
             <h2>The Byzantine Fault</h2>
             <p>We must assume the worst: defective nodes actively conspire to corrupt the system.</p>
             <p>Every response might be a calculated lie.</p>
-        </section>
-      </section>
+        </div>
 
       <!-- Slide 3: System Model -->
-      <section>
+      <div class="slide">
         <h2>The pBFT System Model</h2>
         <ul style="font-size: 0.8em;">
             <li><strong>Asynchrony:</strong> Works over the internet. Messages can be delayed, lost, or duplicated.</li>
@@ -71,10 +129,10 @@
             <li><strong>Cryptography:</strong> Relies on public-key signatures, MACs, and hashes to prevent tampering.</li>
             <li><strong>Safety without Synchrony:</strong> Guarantees no corrupted state, only needing weak synchrony for liveness.</li>
         </ul>
-      </section>
+      </div>
 
       <!-- Slide 4: 3f+1 Rule -->
-      <section>
+      <div class="slide">
         <h2>The $3f+1$ Rule</h2>
         <p>To tolerate $f$ faulty nodes, pBFT requires $n = 3f+1$ total replicas.</p>
         <p class="fragment"><strong>Why?</strong></p>
@@ -83,10 +141,10 @@
             <li>Of those $n-f$ responses, $f$ might be malicious nodes lying.</li>
             <li>For the honest nodes to outvote the malicious ones: $(n-f) - f > f \Rightarrow n > 3f$.</li>
         </ul>
-      </section>
+      </div>
 
       <!-- Slide 4.5: Quorum Intersections -->
-      <section>
+      <div class="slide">
         <h2>Quorum Intersections</h2>
         <p style="font-size: 0.9em;">Guarantee at least one honest node is present in any $2f+1$ majority.</p>
 
@@ -114,10 +172,10 @@
             \end{tikzpicture}
           </script>
         </div>
-      </section>
+      </div>
 
       <!-- Slide 5: State Machine Replication -->
-      <section>
+      <div class="slide">
         <h2>State Machine Replication</h2>
         <p>All replicas start at the same state and execute deterministic operations.</p>
         <p><strong>Goal:</strong> All honest replicas must agree on a total order for requests.</p>
@@ -125,10 +183,10 @@
             <p><em>Primary-Backup Architecture</em></p>
             <p style="font-size: 0.8em;">System moves through <strong>views</strong>. One replica is the primary (leader), the rest are backups. Clients need $f+1$ identical responses to trust a result.</p>
         </div>
-      </section>
+      </div>
 
       <!-- Slide 6: The 3-Phase Protocol -->
-      <section>
+      <div class="slide">
         <h2>The 3-Phase Protocol</h2>
         <p>Required to prevent a traitorous leader from splitting the network.</p>
         <ol>
@@ -136,18 +194,18 @@
             <li class="fragment"><strong>Prepare:</strong> Replicas agree on the order.</li>
             <li class="fragment"><strong>Commit:</strong> Replicas lock the order across view changes.</li>
         </ol>
-      </section>
+      </div>
 
       <!-- Slide 6.5: Normal Case Operation -->
-      <section>
+      <div class="slide">
         <h2>Normal Case Operation</h2>
         <div style="height: 55vh; margin-top: 10px;">
           <object data="normal-case.svg" type="image/svg+xml" width="100%" height="100%"></object>
         </div>
-      </section>
+      </div>
 
       <!-- Slide 7: Pre-prepare & Prepare -->
-      <section>
+      <div class="slide">
         <h2>Phases 1 & 2: Ordering</h2>
         <ul style="font-size: 0.9em;">
             <li><strong>Pre-prepare:</strong> Primary assigns a sequence number to a client's request.</li>
@@ -155,10 +213,10 @@
         </ul>
         <p class="fragment" style="font-size: 0.9em;">Once a node collects $2f$ matching Prepare messages + the Pre-prepare, it is <strong>Prepared</strong>.</p>
         <p class="fragment highlight-green" style="margin-top: 30px;"><em>Ensures agreement on order within the current view.</em></p>
-      </section>
+      </div>
 
       <!-- Slide 8: Commit -->
-      <section>
+      <div class="slide">
         <h2>Phase 3: The Commit</h2>
         <p style="font-size: 0.9em;">Being "prepared" isn't enough to execute, because the leader might fail!</p>
         <ul style="font-size: 0.8em;">
@@ -167,10 +225,10 @@
             <li>The operation is finally executed and sent to the client.</li>
         </ul>
         <p class="highlight-green" style="margin-top: 30px; font-size: 0.9em;"><em>Guarantees order survives even if the leader changes.</em></p>
-      </section>
+      </div>
 
       <!-- Slide 9: Garbage Collection -->
-      <section>
+      <div class="slide">
         <h2>Garbage Collection</h2>
         <p>We can't keep message logs forever. We need to truncate them securely.</p>
         <ul style="font-size: 0.8em;">
@@ -178,10 +236,10 @@
             <li>When $2f+1$ identical checkpoint messages are gathered, it becomes a <strong>Stable Checkpoint</strong>.</li>
             <li>Previous logs are safely deleted!</li>
         </ul>
-      </section>
+      </div>
 
       <!-- Slide 10: View Changes -->
-      <section>
+      <div class="slide">
         <h2>Tolerating Leader Failures</h2>
         <p>What if the Primary is malicious or crashes?</p>
         <ul style="font-size: 0.9em;">
@@ -189,10 +247,10 @@
             <li>If a request isn't processed in time, backups suspect the leader and stop accepting normal messages.</li>
             <li>They broadcast a <code class="highlight-red">VIEW-CHANGE</code> message.</li>
         </ul>
-      </section>
+      </div>
 
       <!-- Slide 11: View Change Protocol -->
-      <section>
+      <div class="slide">
         <h2>The View Change Protocol</h2>
         <ul style="font-size: 0.8em;">
             <li>The next primary (Round-robin: $v \bmod n$) collects $2f$ <code class="highlight-red">VIEW-CHANGE</code> messages.</li>
@@ -200,10 +258,10 @@
             <li>Unfinished operations are safely re-proposed; empty slots are filled with no-ops.</li>
         </ul>
         <p style="margin-top: 30px;"><em>No confirmed operation is ever lost.</em></p>
-      </section>
+      </div>
 
       <!-- Slide 12: Cryptography & Optimizations -->
-      <section>
+      <div class="slide">
         <h2>Making it "Practical"</h2>
         <p style="font-size: 0.9em;">Why was pBFT faster than previous Byzantine models?</p>
         <ul style="font-size: 0.7em;">
@@ -212,47 +270,47 @@
             <li><strong>Batching:</strong> Groups multiple requests under a single consensus protocol.</li>
             <li><strong>Read-only Fast Path:</strong> Direct reads in one network trip.</li>
         </ul>
-      </section>
+      </div>
 
       <!-- Slide 12.5: Replicated File System Architecture -->
-      <section>
+      <div class="slide">
         <h2>BFS Architecture</h2>
         <p style="font-size: 0.6em; margin-bottom: 0;">Replicated File System Architecture (NFS transparent to client)</p>
         <div style="height: 60vh; margin-top: 10px;">
           <object data="bfs-architecture.svg" type="image/svg+xml" width="100%" height="100%"></object>
         </div>
-      </section>
+      </div>
 
       <!-- Slide 13: Micro-Benchmark -->
-      <section>
+      <div class="slide">
         <h2>Micro-Benchmark: Latency</h2>
         <p style="font-size: 0.8em;">Network latency for processing 0KB requests/replies (ms)</p>
         <div class="chart-container">
             <canvas id="microBenchChart"></canvas>
         </div>
-      </section>
+      </div>
 
       <!-- Slide 14: Andrew Benchmark Overhead -->
-      <section>
+      <div class="slide">
         <h2 style="font-size: 1.5em;">Andrew Benchmark: pBFT vs Unreplicated</h2>
         <p style="font-size: 0.8em;">Overhead of adding pBFT vs non-replicated BFS (seconds)</p>
         <div class="chart-container">
             <canvas id="andrewBench1Chart"></canvas>
         </div>
-      </section>
+      </div>
 
       <!-- Slide 15: Andrew Benchmark Commercial -->
-      <section>
+      <div class="slide">
         <h2 style="font-size: 1.5em;">Andrew Benchmark: pBFT vs Commercial NFS</h2>
         <p style="font-size: 0.8em;">pBFT is competitive with standard industry NFS (seconds)</p>
         <div class="chart-container">
             <canvas id="andrewBench2Chart"></canvas>
         </div>
         <p style="font-size: 0.5em; margin-top: 0px;">BFS is faster in phases 1,2,5 because it avoids slow synchronous disk writes, using replicated RAM instead.</p>
-      </section>
+      </div>
 
       <!-- Slide 16: Proactive Recovery -->
-      <section>
+      <div class="slide">
         <h2>Proactive Recovery</h2>
         <p style="font-size: 0.8em;">pBFT survives $f$ failures over its <em>entire lifespan</em>. For long-running systems, this is a limit.</p>
         <ul style="font-size: 0.8em;">
@@ -260,10 +318,10 @@
             <li>They generate new secret keys to prevent identity theft.</li>
             <li>This changes the limit to tolerating $f$ simultaneous failures within a short time window.</li>
         </ul>
-      </section>
+      </div>
 
       <!-- Slide 17: pBFT vs Contemporaries -->
-      <section>
+      <div class="slide">
         <h2>pBFT vs Contemporaries</h2>
         <div style="display:flex; justify-content: space-between; font-size: 0.65em;">
             <div style="width: 32%;">
@@ -280,10 +338,10 @@
             </div>
         </div>
         <p class="fragment" style="margin-top: 40px; font-size: 0.8em;"><strong>Modern Use Cases:</strong> Federated Blockchains (Stellar, IBM Hyperledger).</p>
-      </section>
+      </div>
 
       <!-- Slide 18: Summary -->
-      <section>
+      <div class="slide">
         <h2>Conclusion</h2>
         <ul style="font-size: 0.8em;">
             <li>pBFT brought Byzantine Fault Tolerance out of theoretical papers into practical systems.</li>
@@ -291,117 +349,68 @@
             <li>It remains the architectural foundation for modern high-performance permissioned blockchains.</li>
         </ul>
         <h3 style="margin-top: 40px;">Questions?</h3>
-      </section>
+      </div>
 
-    </div>
+    
   </div>
+  <div class="nav-hint">Use Up/Down arrows to navigate</div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/reveal.min.js"></script>
-  <!-- Math plugin for formulas -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.3.1/plugin/math/math.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
-    Reveal.initialize({
-        hash: true,
-        plugins: [ RevealMath.KaTeX ]
+    document.addEventListener('keydown', (e) => {
+      const container = document.querySelector('.slides-container');
+      const slideHeight = window.innerHeight;
+      if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === ' ') {
+        e.preventDefault();
+        container.scrollBy({ top: slideHeight, behavior: 'smooth' });
+      } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+        e.preventDefault();
+        container.scrollBy({ top: -slideHeight, behavior: 'smooth' });
+      }
     });
 
-    // Chart.js Default styling for Dark Theme
     Chart.defaults.color = '#fff';
     Chart.defaults.font.size = 14;
+    Chart.defaults.font.family = '"Aptos", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
 
-    // Slide 13: Micro-Benchmark
     const ctx1 = document.getElementById('microBenchChart').getContext('2d');
     new Chart(ctx1, {
         type: 'bar',
         data: {
             labels: ['0KB/0KB', '4KB/0KB', '0KB/4KB'],
             datasets: [
-                {
-                    label: 'BFS Strict Replicated',
-                    data: [3.35, 14.19, 8.01],
-                    backgroundColor: 'rgba(255, 99, 132, 0.8)'
-                },
-                {
-                    label: 'BFS Read-only',
-                    data: [1.62, 6.98, 5.94],
-                    backgroundColor: 'rgba(54, 162, 235, 0.8)'
-                },
-                {
-                    label: 'Unreplicated (UDP)',
-                    data: [0.82, 4.62, 4.66],
-                    backgroundColor: 'rgba(255, 206, 86, 0.8)'
-                }
+                { label: 'BFS Strict Replicated', data: [3.35, 14.19, 8.01], backgroundColor: 'rgba(255, 99, 132, 0.8)' },
+                { label: 'BFS Read-only', data: [1.62, 6.98, 5.94], backgroundColor: 'rgba(54, 162, 235, 0.8)' },
+                { label: 'Unreplicated (UDP)', data: [0.82, 4.62, 4.66], backgroundColor: 'rgba(255, 206, 86, 0.8)' }
             ]
         },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: { y: { title: { display: true, text: 'Latency (ms)' } } },
-            plugins: {
-                legend: { position: 'bottom' }
-            }
-        }
+        options: { responsive: true, maintainAspectRatio: false, scales: { y: { title: { display: true, text: 'Latency (ms)' } } }, plugins: { legend: { position: 'bottom' } } }
     });
 
-    // Slide 14: Andrew Benchmark vs Unreplicated
     const ctx2 = document.getElementById('andrewBench1Chart').getContext('2d');
     new Chart(ctx2, {
         type: 'bar',
         data: {
             labels: ['Phase 1 (Dirs)', 'Phase 2 (Copy)', 'Phase 3 (Meta)', 'Phase 4 (Data)', 'Phase 5 (Compile)', 'Total'],
             datasets: [
-                {
-                    label: 'BFS Strict (pBFT)',
-                    data: [0.55, 9.24, 7.24, 8.77, 38.68, 64.48],
-                    backgroundColor: 'rgba(255, 99, 132, 0.8)'
-                },
-                {
-                    label: 'BFS-nr (Unreplicated)',
-                    data: [0.35, 5.08, 6.11, 7.41, 32.12, 51.07],
-                    backgroundColor: 'rgba(255, 206, 86, 0.8)'
-                }
+                { label: 'BFS Strict (pBFT)', data: [0.55, 9.24, 7.24, 8.77, 38.68, 64.48], backgroundColor: 'rgba(255, 99, 132, 0.8)' },
+                { label: 'BFS-nr (Unreplicated)', data: [0.35, 5.08, 6.11, 7.41, 32.12, 51.07], backgroundColor: 'rgba(255, 206, 86, 0.8)' }
             ]
         },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: { y: { title: { display: true, text: 'Time (seconds)' } } },
-            plugins: {
-                legend: { position: 'bottom' }
-            }
-        }
+        options: { responsive: true, maintainAspectRatio: false, scales: { y: { title: { display: true, text: 'Time (seconds)' } } }, plugins: { legend: { position: 'bottom' } } }
     });
 
-    // Slide 15: Andrew Benchmark Commercial
     const ctx3 = document.getElementById('andrewBench2Chart').getContext('2d');
     new Chart(ctx3, {
         type: 'bar',
         data: {
             labels: ['Phase 1 (Dirs)', 'Phase 2 (Copy)', 'Phase 3 (Meta)', 'Phase 4 (Data)', 'Phase 5 (Compile)', 'Total'],
             datasets: [
-                {
-                    label: 'BFS Strict (pBFT)',
-                    data: [0.55, 9.24, 7.24, 8.77, 38.68, 64.48],
-                    backgroundColor: 'rgba(255, 99, 132, 0.8)'
-                },
-                {
-                    label: 'Standard NFS (Commercial)',
-                    data: [1.75, 9.46, 5.36, 6.60, 39.35, 62.52],
-                    backgroundColor: 'rgba(75, 192, 192, 0.8)'
-                }
+                { label: 'BFS Strict (pBFT)', data: [0.55, 9.24, 7.24, 8.77, 38.68, 64.48], backgroundColor: 'rgba(255, 99, 132, 0.8)' },
+                { label: 'Standard NFS (Commercial)', data: [1.75, 9.46, 5.36, 6.60, 39.35, 62.52], backgroundColor: 'rgba(75, 192, 192, 0.8)' }
             ]
         },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: { y: { title: { display: true, text: 'Time (seconds)' } } },
-            plugins: {
-                legend: { position: 'bottom' }
-            }
-        }
+        options: { responsive: true, maintainAspectRatio: false, scales: { y: { title: { display: true, text: 'Time (seconds)' } } }, plugins: { legend: { position: 'bottom' } } }
     });
-
   </script>
 </body>
 </html>
