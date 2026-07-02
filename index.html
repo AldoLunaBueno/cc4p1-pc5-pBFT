@@ -91,14 +91,21 @@
         <p style="font-size: 0.9em;">Guarantee at least one honest node is present in any $2f+1$ majority.</p>
 
         <!-- MathJax Formula Test -->
-        <div style="font-size: 0.8em; margin-top: 10px;">
-          $$ |Q_1 \cap Q_2| = |Q_1| + |Q_2| - |Q_1 \cup Q_2| \ge (2f+1) + (2f+1) - (3f+1) = f+1 $$
+        <div style="font-size: 0.8em; margin-top: 20px; text-align: center;">
+          $$ 
+          \begin{aligned}
+          |Q_1 \cap Q_2| &= |Q_1| + |Q_2| - |Q_1 \cup Q_2| \\
+                         &\ge (2f+1) + (2f+1) - (3f+1) \\
+                         &= 4f + 2 - 3f - 1 \\
+                         &= f+1 
+          \end{aligned}
+          $$
         </div>
 
         <!-- TikZ Diagram Test -->
-        <div style="margin-top: 10px;">
+        <div style="margin-top: 30px; display: flex; justify-content: center;">
           <script type="text/tikz">
-            \begin{tikzpicture}[scale=0.8, every node/.style={transform shape}]
+            \begin{tikzpicture}[scale=1.5, every node/.style={transform shape}]
               \draw[fill=blue!40, opacity=0.6, draw=white, thick] (0,0) circle (1.5);
               \draw[fill=red!40, opacity=0.6, draw=white, thick] (1.5,0) circle (1.5);
               \node[text=white, font=\bfseries] at (-0.5,0) {$Q_1$};
