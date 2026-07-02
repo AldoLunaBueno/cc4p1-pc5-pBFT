@@ -12,6 +12,79 @@ The pBFT algorithm assumes a realistic and hostile system model:
     \item \textbf{Strong Adversary:} It posits an adversary capable of coordinating compromised nodes. pBFT relies heavily on cryptography (public-key signatures, MACs, cryptographic digests) to secure message integrity.
     \item \textbf{Safety without Synchrony:} It guarantees its safety property (contradictory operations will never be committed) regardless of network delays, relying only on weak synchrony for liveness.
 \end{itemize}
+\begin{tikzpicture}[
+        font=\sffamily,
+        node distance=0.8cm and 0.4cm,
+        % Core Style
+        core/.style={rectangle, draw=black, line width=1.2pt, inner sep=10pt, align=center, font=\sffamily\bfseries, text width=6cm},
+        % Pillar Style
+        pillar/.style={rectangle, draw=gray!80, line width=0.8pt, inner sep=6pt, align=center, font=\sffamily\bfseries, text width=4cm, minimum height=1cm},
+        % Detail Style
+        detail/.style={rectangle, draw=gray!20, fill=gray!2, rounded corners=2pt, align=left, inner sep=6pt, text width=4cm, font=\sffamily\scriptsize},
+        % Arrow Styles
+        link/.style={-{Stealth[length=2mm]}, draw=gray!60, line width=0.6pt},
+        interrelation/.style={Stealth-Stealth, draw=black!80, line width=0.6pt, dashed}
+    ]
+
+        % Central Core (Top)
+        \node[core] (core) {
+            pBFT System Model\\
+            \mdseries\small``Never trust, always verify''\\
+            \mdseries\footnotesize(Zero Trust Architecture)
+        };
+
+        % Three Pillars (Middle Row)
+        \node[pillar, below=1.2cm of core] (p2) {
+            2. Strong Adversary\\
+            \mdseries\small[The Threat]
+        };
+
+        \node[pillar, left=of p2] (p1) {
+            1. Asynchrony\\
+            \mdseries\small[The Environment]
+        };
+
+        \node[pillar, right=of p2] (p3) {
+            3. Safety vs Synchrony\\
+            \mdseries\small[The Guarantee]
+        };
+
+        % Connect Core to Pillars
+        \draw[link] (core) -- (p1.north);
+        \draw[link] (core) -- (p2.north);
+        \draw[link] (core) -- (p3.north);
+
+        % Details (Bottom Row)
+        \node[detail, below=0.4cm of p1] (d1) {
+            $\bullet$ Unpredictable network\\
+            $\bullet$ Arbitrary message delays\\
+            $\bullet$ Dropped or reordered data\\
+            $\bullet$ Internet-scale chaos
+        };
+        \draw[link] (p1) -- (d1);
+
+        \node[detail, below=0.4cm of p2] (d2) {
+            $\bullet$ Active, coordinated attacks\\
+            $\bullet$ Hackers \& faulty nodes\\
+            $\bullet$ \textbf{Mitigation:} Cryptography\\
+            \hspace*{2mm}(Signatures, MACs, Hashes)
+        };
+        \draw[link] (p2) -- (d2);
+
+        \node[detail, below=0.4cm of p3] (d3) {
+            $\bullet$ \textbf{Safety:} Absolute data integrity; zero corruption.\\
+            $\bullet$ \textbf{Liveness:} Weak synchrony needed (pauses instead of erring).
+        };
+        \draw[link] (p3) -- (d3);
+
+        % Interrelation Arc between P1 and P3
+        \draw[interrelation] (p1.north east) to[bend left=12] 
+            node[above, font=\sffamily\tiny\itshape, text width=5cm, align=center, yshift=1mm] {
+                Defines network chaos $\longleftrightarrow$ Guarantees integrity despite chaos
+            } 
+            (p3.north west);
+
+    \end{tikzpicture}
 
 \subsection{The $3f+1$ Rule}
 To tolerate $f$ Byzantine failures, the minimum number of replicas required is $n = 3f+1$. This is because the protocol must be able to make progress using responses from $n - f$ replicas (since $f$ nodes could be dead or unresponsive). Within those received responses, $f$ nodes could be malicious liars. For the honest nodes' votes to strictly outvote the malicious ones, the following inequality must hold: $(n - f) - f > f \implies n > 3f$.
